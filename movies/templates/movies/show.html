@@ -1,0 +1,218 @@
+Search for books, courses, events, and more
+Search for books, courses, events, and more
+4
+Creating a Movies App with Dummy Data
+Currently, our project contains a single application with a couple of sections that display static information. Web applications are more complex. In this chapter, we will learn how to develop more complex applications, such as the movies app. The movies app will serve to list movies and enable users to click on them to display their data on a separate page. For now, we will use dummy data to simulate the movie data.
+
+In this chapter, we will be covering the following topics:
+
+Creating the movies app
+Listing movies with dummy data
+Listing individual movies
+Adding a link in the base template
+By the end, we will know how to create more complex Django apps and how to manage information inside those apps.
+
+Technical requirements
+In this chapter, we will be using Python 3.10+. Additionally, we will be using the VS Code editor in this book, which you can download from https://code.visualstudio.com/.
+
+The code for this chapter is located at https://github.com/PacktPublishing/Django-5-for-the-Impatient-Second-Edition/tree/main/Chapter04/moviesstore.
+
+The CiA video for this chapter can be found at https://packt.link/WmJR1
+
+Creating the movies app
+Currently, we have a home app that contains the logic to navigate between the Home and About pages. Now, we are going to start designing and implementing the movies logic. We prefer to separate this logic from the home app. So, let’s create a new Django app. We will follow the next steps: (i) creating the movies app, (ii) adding the movies app to settings, and (iii) including the movies URL file in the project-level URL file.
+
+Creating the movies app
+Navigate to the top moviesstore folder (the one that contains the manage.py file) and run the following in the Terminal:
+
+For macOS, run the following command:
+
+python3 manage.py startapp movies
+For Windows, run the following command:
+
+python manage.py startapp movies
+Figure 4.1 shows the new project structure. Verify that it matches your current folder structure.
+
+Figure 4.1 – The MOVIESSTORE project structure containing the movies app
+Figure 4.1 – The MOVIESSTORE project structure containing the movies app
+
+Adding the movies app to settings
+Remember that for each newly created app, we must register it in the settings.py file. In /moviesstore/settings.py, under INSTALLED_APPS, add the following in bold:
+
+…
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'home',
+    'movies',
+]
+…
+Including the movies URL file in the project-level URL file
+In /moviesstore/urls.py, add the following in bold:
+
+…
+from django.contrib import admin
+from django.urls import path, include
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('home.urls')),
+    path('movies/', include('movies.urls')),
+]
+Similar to the inclusion of the home.urls file, we include the movies.urls file, which will contain the URLs with respect to the movies app. All the URLs defined in the movies.urls file will contain a movies/ prefix (as defined in the previous path). We will create the movies.urls file later.
+
+Now that we have created and included the movies app, we are ready to code the functionalities of this app. Let’s start by listing movies.
+
+Listing movies with dummy data
+Listing movies involves a series of steps similar to those followed when we implemented the Home and About pages. We will follow the next steps: (i) configuring the movies URL, (ii) defining the views index function, and (iii) creating a movies index template.
+
+Configuring the movies URL
+In /movies/, create a new file called urls.py. This file will contain the path regarding the URLs of the movies app. For now, fill it in with the following:
+
+from django.urls import path
+from . import views
+urlpatterns = [
+    path('', views.index, name='movies.index'),
+]
+We defined a '' path, but remember that the project-level URLs file defined a /movies prefix for this file. So, if a URL matches the /movies path, it will execute the index function defined in the views file. We will implement the index function next.
+
+Defining the views index function
+In /movies/views.py, add the following in bold:
+
+from django.shortcuts import render
+movies = [
+    {
+        'id': 1, 'name': 'Inception', 'price': 12,
+        'description': 'A mind-bending heist thriller.'
+    },
+    {
+        'id': 2, 'name': 'Avatar', 'price': 13,
+        'description': 'A journey to a distant world and
+        the battle for resources.'
+    },
+    {
+        'id': 3, 'name': 'The Dark Knight', 'price': 14,
+        'description': 'Gothams vigilante faces the Joker.'
+    },
+    {
+        'id': 4, 'name': 'Titanic', 'price': 11,
+        'description': 'A love story set against the
+        backdrop of the sinking Titanic.',
+    },
+]
+def index(request):
+    template_data = {}
+    template_data['title'] = 'Movies'
+    template_data['movies'] = movies
+    return render(request, 'movies/index.html',
+                  {'template_data': template_data})
+Let’s explain the previous code:
+
+We defined a variable called movies. This variable is a list of dictionaries, where each dictionary represents information about a particular movie. For example, at index 0, we have the movie with id=1 (the Inception movie). We have four dummy movies. We will retrieve movie data from a SQLite database in upcoming chapters.
+We also have an index function. This function will render the movies/index.html template, but first, it passes a page title and the complete list of movies to that template.
+Creating a movies index template
+In /movies/, create a templates folder. Then, in /movies/templates/, create a movies folder.
+
+Now, in /movies/templates/movies/, create a new file, index.html. For now, fill it in with the following:
+
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+<div class="p-3">
+  <div class="container">
+    <div class="row mt-3">
+      <div class="col mx-auto mb-3">
+        <h2>List of Movies</h2>
+        <hr />
+      </div>
+    </div>
+    <div class="row">
+      {% for movie in template_data.movies %}
+      <div class="col-md-4 col-lg-3 mb-2">
+        <div class="p-2 card align-items-center pt-4">
+          <img src="{% static 'img/about.jpg' %}"
+            class="card-img-top rounded">
+          <div class="card-body text-center">
+            {{ movie.name }}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock content %}
+Let’s explain the previous code:
+
+We extend the base.html template.
+We define a heading element with the text List of Movies.
+We use the DTL for template tag to iterate through each movie, and we display the movie name. For now, we are showing a default image for all movies; we will upload and display proper images for each movie in upcoming chapters.
+Note
+
+We used the Bootstrap card component as a base to design the way movies are displayed. You can find more information here: https://getbootstrap.com/docs/5.3/components/card/.
+
+Now, save those files, run the server, and go to http://localhost:8000/movies; you should see the new List of Movies page (Figure 4.2).
+
+Figure 4.2 – The List of Movies page
+Figure 4.2 – The List of Movies page
+
+We are able to see the information of all movies together. Now, let’s implement a functionality to list individual movies.
+
+Listing individual movies
+To list individual movies, we will follow these steps: (i) configuring individual movies URLs, (ii) defining the views show function, (iii) creating a movies show template, and (iv) adding individual movie links on the movies page.
+
+Configuring individual movies URLs
+In /movies/urls.py, add the next path in bold:
+
+from django.urls import path
+from . import views
+urlpatterns = [
+    path('', views.index, name='movies.index'),
+    path('<int:id>/', views.show, name='movies.show'),
+]
+This path is a little different from the previously defined paths. The <int:id> part indicates that this path expects an integer value to be passed from the URL and that the integer value will be associated with a variable named id, which will be used to identify which movie data to show. For example, if we access movies/1, the application will display the data of the movie with id=1. Finally, that path will execute the show function defined in the views file. You can learn more about Django URLs here: https://docs.djangoproject.com/en/5.0/topics/http/urls/.
+
+Defining the views show function
+In /movies/views.py, add the following in bold at the end of the file:
+
+…
+def show(request, id):
+    movie = movies[id - 1]
+    template_data = {}
+    template_data['title'] = movie['name']
+    template_data['movie'] = movie
+    return render(request, 'movies/show.html',
+                  {'template_data': template_data})
+Let’s explain the previous code:
+
+We define the show function. This function takes two parameters: request and id (id is collected from the URL).
+Then, we extract the movie data with that ID. We subtract one unit since we stored the movie with id=1 in the movies list index 0, the movie with id=2 in the movies list index 1, and so on.
+Finally, we pass the movie name and the individual movie to the movies/show.html template.
+Creating a movies show template
+In /movies/templates/movies/, create a new file, show.html. For now, fill it in with the following:
+
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+<div class="p-3">
+  <div class="container">
+    <div class="row mt-3">
+      <div class="col-md-6 mx-auto mb-3">
+        <h2>{{ template_data.movie.name }}</h2>
+        <hr />
+        <p><b>Description:</b> {{
+          template_data.movie.description }}</p>
+        <p><b>Price:</b> ${{
+          template_data.movie.price }}</p>
+      </div>
+      <div class="col-md-6 mx-auto mb-3 text-center">
+         <img src="{{ template_data.movie.image.url }}"
+          class="rounded img-card-400" />
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
